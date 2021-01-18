@@ -5,8 +5,8 @@ import csv
 import itertools
 import numpy as np
 
-n_locations = 10
-n_solutions = 2
+n_locations = 5
+n_solutions = 4
 train_test = 'train'
 
 def create_location_set(n_locations):
@@ -25,8 +25,8 @@ def get_distance_matrix(location_set):
     return distance_matrix
 
 def permutation_length(distance_matrix, permutation):
-    ind1 = permutation
-    ind2 = permutation[1:] + permutation[:1]
+    ind1 = permutation[:-1]
+    ind2 = permutation[1:]
 
     return distance_matrix[ind1, ind2].sum()
 
@@ -35,16 +35,16 @@ def solve(location_set):
     best_permutation = None
 
     distance_matrix = get_distance_matrix(location_set)
-
     points = range(0, distance_matrix.shape[0])
-    print(points)
 
     for partial_permutation in itertools.permutations(points):
-        permutation = [0] + list(partial_permutation)
-
+        permutation = list(partial_permutation)
         distance = permutation_length(distance_matrix, permutation)
 
         if distance < best_distance:
+            print('Better disntance found')
+            print(best_permutation)
+            print(permutation)
             best_distance = distance
             best_permutation = permutation
 
@@ -70,7 +70,6 @@ def generate_solutions(n_locations, n_solutions):
 
         location_set = create_location_set(n_locations)
         solution, distance = solve(location_set)
-        print(solution)
         solution = encode(solution)
 
         x_file = './data/x_' + train_test + '.csv'

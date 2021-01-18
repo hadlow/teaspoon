@@ -15,7 +15,7 @@ def show_first_solution():
 
     inputs = np.genfromtxt('./data/x_' + train_test + '.csv', delimiter=',')
     outputs = np.genfromtxt('./data/y_' + train_test + '.csv', delimiter=',')
-    outputs = np.delete(outputs, 10, axis=1)
+    outputs = np.delete(outputs, len(outputs[0]) - 1, axis=1)
 
     for x in inputs:
         locations.append(x.reshape(-1, 2))
@@ -23,7 +23,6 @@ def show_first_solution():
     for index, row in enumerate(outputs):
         visits = enumerate(row)
         orders = sorted(visits, key=lambda x:x[1])
-        print(orders)
 
         for order, location in enumerate(orders):
             if order + 1 >= len(orders):
@@ -34,9 +33,6 @@ def show_first_solution():
 
             location_from = locations[index][location_x]
             location_to = locations[index][location_y]
-            print('Location')
-            print(location_from)
-            print(location_to)
 
             draw_edge(location_from, location_to)
 
