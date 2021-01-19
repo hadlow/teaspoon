@@ -2,10 +2,11 @@ import os
 import time
 import math
 import csv
+import threading
 import itertools
 import numpy as np
 
-n_locations = 5
+n_locations = 10
 n_solutions = 4
 train_test = 'train'
 
@@ -42,9 +43,6 @@ def solve(location_set):
         distance = permutation_length(distance_matrix, permutation)
 
         if distance < best_distance:
-            print('Better disntance found')
-            print(best_permutation)
-            print(permutation)
             best_distance = distance
             best_permutation = permutation
 
@@ -64,33 +62,37 @@ def write_header(values, file_name):
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(values)
 
+def generate_solution(start_time, i):
+    location_set = create_location_set(n_locations)
+    solution, distance = solve(location_set)
+    solution = encode(solution)
+
+    x_file = './data/x_' + train_test + '.csv'
+    y_file = './data/y_' + train_test + '.csv'
+
+    if os.stat(x_file).st_size == 0:
+        write_header(range(1, (n_locations * 2) + 1), x_file)
+
+    if os.stat(y_file).st_size == 0:
+        write_header(range(1, n_locations + 2), y_file)
+
+    with open('./data/x_' + train_test + '.csv', 'a', newline = '') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(location_set.flatten())
+
+    with open('./data/y_' + train_test + '.csv', 'a', newline = '') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(np.append(solution, distance))
+ 
+        time_taken = round(time.time() - start_time, 4)
+        print(f"Solution {i+1} generated, took {time_taken} seconds")
+
 def generate_solutions(n_locations, n_solutions):
     for i in range(n_solutions):
         start_time = time.time()
 
-        location_set = create_location_set(n_locations)
-        solution, distance = solve(location_set)
-        solution = encode(solution)
+        thread = threading.Thread(target=generate_solution, args=[start_time, i])
+        thread.start()
 
-        x_file = './data/x_' + train_test + '.csv'
-        y_file = './data/y_' + train_test + '.csv'
-
-        if os.stat(x_file).st_size == 0:
-            write_header(range(1, (n_locations * 2) + 1), x_file)
-
-        if os.stat(y_file).st_size == 0:
-            write_header(range(1, n_locations + 2), y_file)
-
-        with open('./data/x_' + train_test + '.csv', 'a', newline = '') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(location_set.flatten())
-
-        with open('./data/y_' + train_test + '.csv', 'a', newline = '') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(np.append(solution, distance))
-
-        time_taken = round(time.time() - start_time, 4)
-        print(f"Solution {i+1} generated, took {time_taken} seconds")
-         
 generate_solutions(n_locations, n_solutions)
 
