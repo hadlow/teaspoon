@@ -43,6 +43,6 @@ def show_solutions():
 
         locations = inputs[random_index].reshape(-1, 2)
 
-        draw_route(permutation.astype(int), locations)
+        draw_route(outputs[random_index].astype(int), locations)
 
 show_solutions()
