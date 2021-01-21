@@ -1,3 +1,4 @@
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,7 +34,14 @@ def show_solutions():
     outputs = np.delete(outputs, len(outputs[0]) - 1, axis=1)
 
     for index, permutation in enumerate(outputs):
-        locations = inputs[index].reshape(-1, 2)
+        if index > 5:
+            break
+
+        random_index = random.randint(0, len(outputs))
+
+        print(f'Showing solution {random_index}')
+
+        locations = inputs[random_index].reshape(-1, 2)
 
         draw_route(permutation.astype(int), locations)
 
