@@ -1,98 +1,73 @@
-import os
-import time
-import math
 import csv
-import threading
-import itertools
+import math
+import time
 import numpy as np
+import matplotlib.pyplot as plt
+from python_tsp.exact import solve_tsp_dynamic_programming
+from python_tsp.distances import euclidean_distance_matrix
 
+n_solutions = 50
 n_locations = 10
-n_solutions = 4
-train_test = 'train'
 
-def create_location_set(n_locations):
-    return np.random.rand(n_locations, 2)
+def draw_edge(a, b):
+    x = [a[0], b[0]]
+    y = [a[1], b[1]]
 
-def distance(location_a, location_b):
-    return math.hypot(location_b[0] - location_a[0], location_b[1] - location_a[1])
+    plt.plot(x, y, 'k-')
 
-def get_distance_matrix(location_set):
-    distance_matrix = np.zeros([len(location_set), len(location_set)])
+def draw_route(permutation, points):
+    for position_index, location_index in enumerate(permutation):
+        if len(permutation) == position_index + 1:
+            next_location_index = permutation[0]
+        else:
+            next_location_index = permutation[position_index + 1]
 
-    for index_x, location_x in enumerate(location_set):
-        for index_y, location_y in enumerate(location_set):
-            distance_matrix[index_x, index_y] = distance(location_x, location_y)
-    
-    return distance_matrix
+        location_from = points[location_index]
+        location_to = points[next_location_index]
+        
+        draw_edge(location_from, location_to)
 
-def permutation_length(distance_matrix, permutation):
-    ind1 = permutation[:-1]
-    ind2 = permutation[1:]
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
 
-    return distance_matrix[ind1, ind2].sum()
+def get_solution(locations):
+    distance_matrix = euclidean_distance_matrix(locations)
 
-def solve(location_set):
-    best_distance = np.inf
-    best_permutation = None
-
-    distance_matrix = get_distance_matrix(location_set)
-    points = range(0, distance_matrix.shape[0])
-
-    for partial_permutation in itertools.permutations(points):
-        permutation = list(partial_permutation)
-        distance = permutation_length(distance_matrix, permutation)
-
-        if distance < best_distance:
-            best_distance = distance
-            best_permutation = permutation
-
-    return best_permutation, best_distance
-
-def encode(solution):
-    encoded_solution = np.zeros(len(solution))
-    encoding = np.round(np.linspace(0, 1, n_locations, endpoint=True), 3)
-
-    for index, node in enumerate(solution):
-        encoded_solution[index] = encoding[node]
-
-    return encoded_solution
+    return solve_tsp_dynamic_programming(distance_matrix)
 
 def write_header(values, file_name):
     with open(file_name, 'a', newline = '') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(values)
 
-def generate_solution(start_time, i):
-    location_set = create_location_set(n_locations)
-    solution, distance = solve(location_set)
-    solution = encode(solution)
-
-    x_file = './data/x_' + train_test + '.csv'
-    y_file = './data/y_' + train_test + '.csv'
-
-    if os.stat(x_file).st_size == 0:
-        write_header(range(1, (n_locations * 2) + 1), x_file)
-
-    if os.stat(y_file).st_size == 0:
-        write_header(range(1, n_locations + 2), y_file)
-
-    with open('./data/x_' + train_test + '.csv', 'a', newline = '') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(location_set.flatten())
-
-    with open('./data/y_' + train_test + '.csv', 'a', newline = '') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(np.append(solution, distance))
+def generate_solution(start_time, i, n_locations):
+    locations = np.random.rand(n_locations, 2)
+    permutation, distance = get_solution(locations)
  
-        time_taken = round(time.time() - start_time, 4)
-        print(f"Solution {i+1} generated, took {time_taken} seconds")
+    x_file = './data/x_raw.csv'
+    y_file = './data/y_raw.csv'
 
-def generate_solutions(n_locations, n_solutions):
+    with open(x_file, 'a', newline = '') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(locations.flatten())
+
+    with open(y_file, 'a', newline = '') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(np.append(permutation, distance))
+ 
+    time_taken = round(time.time() - start_time, 4)
+    print(f"Solution {i+1} generated, took {time_taken} seconds")
+
+if __name__ == "__main__":
+    program_start_time = time.time()
+
     for i in range(n_solutions):
         start_time = time.time()
 
-        thread = threading.Thread(target=generate_solution, args=[start_time, i])
-        thread.start()
-
-generate_solutions(n_locations, n_solutions)
+        generate_solution(start_time, i, n_locations)
+    
+    total_time_taken = round(time.time() - program_start_time, 4)
+    print(f"{n_solutions} solutions generated in a total of {total_time_taken} seconds")
 
