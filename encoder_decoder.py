@@ -1,6 +1,6 @@
 import numpy as np
 
-def encode(solution):
+def encode(solution, distance_removed=False):
     """
     Take permutation along with the total distance, say
     3, 6, 1, 0, 2, 4, 5, 1.724723523
@@ -9,7 +9,10 @@ def encode(solution):
     the distance as it is.
     """
 
-    n_locations = len(solution) - 1
+    n_locations = len(solution)
+
+    if remove_distance:
+        n_locations = n_locations - 1
 
     encoded_solution = np.zeros(n_locations)
     encoding = np.round(np.linspace(0, 1, n_locations, endpoint=True), 3)
