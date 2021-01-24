@@ -2,6 +2,8 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 
+from encoder_decoder import decode
+
 def draw_edge(a, b):
     x = [a[0], b[0]]
     y = [a[1], b[1]]
@@ -30,19 +32,22 @@ def show_solutions():
     orders = []
 
     inputs = np.genfromtxt('./data/x_raw.csv', delimiter=',')
-    outputs = np.genfromtxt('./data/y_raw.csv', delimiter=',')
-    outputs = np.delete(outputs, len(outputs[0]) - 1, axis=1)
+    encoded_outputs = np.genfromtxt('./data/y_encoded.csv', delimiter=',')
+    encoded_outputs = np.delete(encoded_outputs, len(encoded_outputs[0]) - 1, axis=1)
 
-    for index, permutation in enumerate(outputs):
-        if index > 5:
+    raw_outputs = np.genfromtxt('./data/y_raw.csv', delimiter=',')
+    raw_outputs = np.delete(raw_outputs, len(raw_outputs[0]) - 1, axis=1)
+
+    for index, permutation in enumerate(encoded_outputs):
+        if index > 4:
             break
 
-        random_index = random.randint(0, len(outputs))
+        random_index = random.randint(0, len(encoded_outputs) - 1)
 
         print(f'Showing solution {random_index}')
 
         locations = inputs[random_index].reshape(-1, 2)
 
-        draw_route(outputs[random_index].astype(int), locations)
+        draw_route(decode(encoded_outputs[random_index]).astype(int), locations)
 
 show_solutions()
