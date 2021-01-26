@@ -105,3 +105,6 @@ for index, test_batch in enumerate(test_loader):
 
     draw_route(decoded_pred, test_x)
 
+# Save model
+torch.save(model.state_dict(), './models/v1.0.py')
+
