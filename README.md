@@ -34,4 +34,4 @@ Coming soon. RL will enable the network to learn without a data generation step.
 
 ### Further work
 
-Can ML be used to estimate the total length of the most efficient permutation?
+Can ML be used to estimate the total length of the most efficient permutation? Also, need to improve the scalability - large problems sizes take a long time to train.
